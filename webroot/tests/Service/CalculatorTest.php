@@ -21,13 +21,20 @@ class CalculatorTest extends TestCase {
         // Wir erstellen eine Instanz:
         $calc = new Calculator();
 
-        // wir fragen nach 0°C:
+        // wir fragen nach 0°C. Dies sollte 32 F ergeben:
         $result = $calc->cToF(0);
-
         // erhalten wir eine Float-Antwort?
         $this->assertIsFloat($result);
         // ... und stimmt sie auch?
         $this->assertSame(32.0, $result);
+
+           // wir fragen nach 5°C. Dies sollte 41 F ergeben:
+        $result = $calc->cToF(5);
+        $this->assertIsFloat($result);
+        $this->assertSame(41.0, $result);
+
+
+
     }
     
     public function testCToFArray() {
