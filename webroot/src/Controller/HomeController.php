@@ -250,6 +250,7 @@ class HomeController {
                 return null;
     }
 
+    // ToDO: private machen und Programm testen. Danach Test dazu schreiben
     public function renderWeatherDataResponse($template, $weatherdata, $airdata){
         return $template->render([
             'weatherdata' => $weatherdata,
