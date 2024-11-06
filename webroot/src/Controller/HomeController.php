@@ -85,169 +85,168 @@ class HomeController {
     }
 
     public function getWeatherDataFromApi($plz) {
-        // Wetterdaten mit HTTP-Client holen:
-                // Openweather Key: von Env-Variable (siehe docker-compose.yml)
-                $apiKey = getenv('OPENWEATHER_KEY');
-                $apiUrl = 'https://api.openweathermap.org/data/2.5/weather';
-                $lang = 'de';
-                $units = 'metric';
-                $country = 'CH';
-                $client = new Client();
-                $apiResponse = $client->get($apiUrl, [
-                    'query' => [
-                        'zip' => "{$plz},{$country}",
-                        'units' => $units,
-                        'lang' => $lang,
-                        'appid' => $apiKey,
-                    ]
-                ]);
+    // Wetterdaten mit HTTP-Client holen:
+        // Openweather Key: von Env-Variable (siehe docker-compose.yml)
+        $apiKey = getenv('OPENWEATHER_KEY');
+        $apiUrl = 'https://api.openweathermap.org/data/2.5/weather';
+        $lang = 'de';
+        $units = 'metric';
+        $country = 'CH';
+        $client = new Client();
+        $apiResponse = $client->get($apiUrl, [
+            'query' => [
+                'zip' => "{$plz},{$country}",
+                'units' => $units,
+                'lang' => $lang,
+                'appid' => $apiKey,
+            ]
+        ]);
 
-                if ($apiResponse->getStatusCode() === 200) {
-                    $data = json_decode((string)$apiResponse->getBody());
+        if ($apiResponse->getStatusCode() === 200) {
+            $data = json_decode((string)$apiResponse->getBody());
 
-                    // Daten auslesen, normalisieren:
-                    $weatherdata = [
-                        'ts' => date(DATE_W3C, $data->dt ?? null) ?: null,
-                        'city' => $data->name ?? null,
-                        'longitude' => $data->coord->lon ?? null,
-                        'latitude' => $data->coord->lat ?? null,
-                        'description' => $data->weather[0]->description ?? null,
-                        'icon' => $data->weather[0]->icon ?? null,
-                        'temp' => $data->main->temp ?? null,
-                        'temp_feels_like' => $data->main->feels_like ?? null,
-                        'temp_min' => $data->main->temp_min ?? null,
-                        'temp_max' => $data->main->temp_max ?? null,
-                        'pressure' => $data->main->pressure ?? null,
-                        'humidity' => $data->main->humidity ?? null,
-                        'wind_speed' => $data->wind->speed ?? null,
-                        'wind_degree' => $data->wind->deg ?? null,
-                        'wind_gust' => $data->wind->gust ?? null,
-                        'clouds_percentage' => $data->clouds->all ?? null,
-                        'sunrise' => date(DATE_W3C, $data->sys->sunrise ?? 0),
-                        'sunset' => date(DATE_W3C, $data->sys->sunset ?? 0),
-                    ];
-                    return $weatherdata;
+            // Daten auslesen, normalisieren:
+            $weatherdata = [
+                'ts' => date(DATE_W3C, $data->dt ?? null) ?: null,
+                'city' => $data->name ?? null,
+                'longitude' => $data->coord->lon ?? null,
+                'latitude' => $data->coord->lat ?? null,
+                'description' => $data->weather[0]->description ?? null,
+                'icon' => $data->weather[0]->icon ?? null,
+                'temp' => $data->main->temp ?? null,
+                'temp_feels_like' => $data->main->feels_like ?? null,
+                'temp_min' => $data->main->temp_min ?? null,
+                'temp_max' => $data->main->temp_max ?? null,
+                'pressure' => $data->main->pressure ?? null,
+                'humidity' => $data->main->humidity ?? null,
+                'wind_speed' => $data->wind->speed ?? null,
+                'wind_degree' => $data->wind->deg ?? null,
+                'wind_gust' => $data->wind->gust ?? null,
+                'clouds_percentage' => $data->clouds->all ?? null,
+                'sunrise' => date(DATE_W3C, $data->sys->sunrise ?? 0),
+                'sunset' => date(DATE_W3C, $data->sys->sunset ?? 0),
+            ];
+            return $weatherdata;
+        }
+        return null;
     }
-    return null;
- 
-}
 
 
     public function getAirDataFromApi($plz) {
-          // -------------- Luftdaten ---------------------------
-          $apiKey = getenv('OPENWEATHER_KEY');
+        // -------------- Luftdaten ---------------------------
+        $apiKey = getenv('OPENWEATHER_KEY');
 
-          $country = 'CH';
+        $country = 'CH';
 
-          $geocodingApiUrl = 'http://api.openweathermap.org/geo/1.0/zip';
-          $airPollutionApiUrl = 'http://api.openweathermap.org/data/2.5/air_pollution';
+        $geocodingApiUrl = 'http://api.openweathermap.org/geo/1.0/zip';
+        $airPollutionApiUrl = 'http://api.openweathermap.org/data/2.5/air_pollution';
 
-          // Koordinaten mit HTTP-Client holen:
-          $client = new Client();
-          $apiResponse = $client->get($geocodingApiUrl, [
-              'query' => [
-                  'zip' => "{$plz},{$country}",
-                  'appid' => $apiKey,
-              ]
-          ]);
+        // Koordinaten mit HTTP-Client holen:
+        $client = new Client();
+        $apiResponse = $client->get($geocodingApiUrl, [
+            'query' => [
+                'zip' => "{$plz},{$country}",
+                'appid' => $apiKey,
+            ]
+        ]);
 
-          $city = null;
-          $latitude = null;
-          $longitude = null;
+        $city = null;
+        $latitude = null;
+        $longitude = null;
 
-          if ($apiResponse->getStatusCode() === 200) {
-              $data = json_decode((string)$apiResponse->getBody());
-              $city = $data->name;
-              $longitude = $data->lon;
-              $latitude = $data->lat;
-          } else {
-              //break;
-          }
+        if ($apiResponse->getStatusCode() === 200) {
+            $data = json_decode((string)$apiResponse->getBody());
+            $city = $data->name;
+            $longitude = $data->lon;
+            $latitude = $data->lat;
+        } else {
+            //break;
+        }
 
-          // Luft-Daten mit HTTP-Client holen:
-          $client = new Client();
-          $apiResponse = $client->get($airPollutionApiUrl, [
-              'query' => [
-                  'lat' => $latitude,
-                  'lon' => $longitude,
-                  'appid' => $apiKey,
-              ]
-          ]);
+        // Luft-Daten mit HTTP-Client holen:
+        $client = new Client();
+        $apiResponse = $client->get($airPollutionApiUrl, [
+            'query' => [
+                'lat' => $latitude,
+                'lon' => $longitude,
+                'appid' => $apiKey,
+            ]
+        ]);
 
-          if ($apiResponse->getStatusCode() === 200) {
-              $data = json_decode((string)$apiResponse->getBody());
+        if ($apiResponse->getStatusCode() === 200) {
+            $data = json_decode((string)$apiResponse->getBody());
 
-              // Daten auslesen, normalisieren:
-              $airdata = [
-                  'zip' => $plz,
-                  'city' => $city,
-                  'latitude' => $latitude,
-                  'longitude' => $longitude,
-                  'ts' => date(DATE_W3C, $data->list[0]->dt ?? null) ?: null,
-                  'aqi' => $data->list[0]->main->aqi ?? null,
-                  'co' => $data->list[0]->components->co ?? null,
-                  'no' => $data->list[0]->components->no ?? null,
-                  'no2' => $data->list[0]->components->no2 ?? null,
-                  'o3' => $data->list[0]->components->o3 ?? null,
-                  'so2' => $data->list[0]->components->so2 ?? null,
-                  'pm2_5' => $data->list[0]->components->pm2_5 ?? null,
-                  'pm10' => $data->list[0]->components->pm10 ?? null,
-                  'nh3' => $data->list[0]->components->nh3 ?? null,
-              ];
-              return $airdata;
-          }
-          return null;
+            // Daten auslesen, normalisieren:
+            $airdata = [
+                'zip' => $plz,
+                'city' => $city,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'ts' => date(DATE_W3C, $data->list[0]->dt ?? null) ?: null,
+                'aqi' => $data->list[0]->main->aqi ?? null,
+                'co' => $data->list[0]->components->co ?? null,
+                'no' => $data->list[0]->components->no ?? null,
+                'no2' => $data->list[0]->components->no2 ?? null,
+                'o3' => $data->list[0]->components->o3 ?? null,
+                'so2' => $data->list[0]->components->so2 ?? null,
+                'pm2_5' => $data->list[0]->components->pm2_5 ?? null,
+                'pm10' => $data->list[0]->components->pm10 ?? null,
+                'nh3' => $data->list[0]->components->nh3 ?? null,
+            ];
+            return $airdata;
+        }
+        return null;
     }
 
     public function getWeatherDataFromDB($plz, $dateStr) {
         $dbConn = DB::conn();
- // Wir suchen den einen Eintrag der gegebenen PLZ, welcher am nächsten zum gegebenen
-                // Datum/Zeitstempel ist, aber nur innerhalb einer 30min-Distanz:
-                $query = "
-                    SELECT * FROM weather WHERE
-                    zip = :zip
-                    AND datetime(ts, 'localtime') >= datetime(:ts, '-900 second', 'localtime')
-                    AND datetime(ts, 'localtime') <= datetime(:ts, '+900 second', 'localtime')
-                    ORDER BY ts DESC
-                    LIMIT 1
-                ";
-                $stm = $dbConn->prepare($query);
-                $stm->execute([
-                    'zip' => $plz,
-                    'ts' => $dateStr
-                ]);
-                $weatherdata = $stm->fetchAll(PDO::FETCH_ASSOC);
-                // 1. Record aus Result extrahieren:
-                if (!empty($weatherdata)) {
-                    $weatherdata = $weatherdata[0];
-                    return $weatherdata;
-                }
-                return null;
+    // Wir suchen den einen Eintrag der gegebenen PLZ, welcher am nächsten zum gegebenen
+        // Datum/Zeitstempel ist, aber nur innerhalb einer 30min-Distanz:
+        $query = "
+            SELECT * FROM weather WHERE
+            zip = :zip
+            AND datetime(ts, 'localtime') >= datetime(:ts, '-900 second', 'localtime')
+            AND datetime(ts, 'localtime') <= datetime(:ts, '+900 second', 'localtime')
+            ORDER BY ts DESC
+            LIMIT 1
+        ";
+        $stm = $dbConn->prepare($query);
+        $stm->execute([
+            'zip' => $plz,
+            'ts' => $dateStr
+        ]);
+        $weatherdata = $stm->fetchAll(PDO::FETCH_ASSOC);
+        // 1. Record aus Result extrahieren:
+        if (!empty($weatherdata)) {
+            $weatherdata = $weatherdata[0];
+            return $weatherdata;
+        }
+        return null;
     }
 
     public function getAirDataFromDB($plz, $dateStr) {
-   // ... dasselbe suchen wir für die Luft-Daten:
+    // ... dasselbe suchen wir für die Luft-Daten:
         $dbConn = DB::conn();
-                $query = "
-                    SELECT * FROM air_pollution WHERE
-                    zip = :zip
-                    AND datetime(ts, 'localtime') >= datetime(:ts, '-900 second', 'localtime')
-                    AND datetime(ts, 'localtime') <= datetime(:ts, '+900 second', 'localtime')
-                    ORDER BY ts DESC
-                    LIMIT 1
-                ";
-                $stm = $dbConn->prepare($query);
-                $stm->execute([
-                    'zip' => $plz,
-                    'ts' => $dateStr
-                ]);
-                $airdata = $stm->fetchAll(PDO::FETCH_ASSOC);
-                // 1. Record aus Result extrahieren:
-                if (!empty($airdata)) {
-                    $airdata = $airdata[0];
-                    return $airdata;
-                }
-                return null;
+        $query = "
+            SELECT * FROM air_pollution WHERE
+            zip = :zip
+            AND datetime(ts, 'localtime') >= datetime(:ts, '-900 second', 'localtime')
+            AND datetime(ts, 'localtime') <= datetime(:ts, '+900 second', 'localtime')
+            ORDER BY ts DESC
+            LIMIT 1
+        ";
+        $stm = $dbConn->prepare($query);
+        $stm->execute([
+            'zip' => $plz,
+            'ts' => $dateStr
+        ]);
+        $airdata = $stm->fetchAll(PDO::FETCH_ASSOC);
+        // 1. Record aus Result extrahieren:
+        if (!empty($airdata)) {
+            $airdata = $airdata[0];
+            return $airdata;
+        }
+        return null;
     }
 
     // ToDO: private machen und Programm testen. Danach Test dazu schreiben
@@ -266,7 +265,6 @@ class HomeController {
     }
 
     public function getWeatherDataHtml(ServerRequestInterface $request, ResponseInterface $response, array $args): ResponseInterface {
-      
         $params = $this->getInputParams($request);
 
         // Set up Twig, the Template engine:
