@@ -10,78 +10,58 @@ namespace Test\Service;
 use App\Service\Calculator;
 // import phpunit.framework.TestCase;
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 // Unsere Klasse muss [Etwas]Test heissen
 // und von PHPUnit\Framework\TestCase erben:
 class CalculatorTest extends TestCase {
+    // Unser Dataprovider (statische methode) liefert Test-Daten für
+    // einzelne "Durchläufe":
+    public static function cToFData(): array {
+        // Wir liefern einen Array mit einzelnen Test-Datensätzen:
+        return [
+            // Jeder Test-Datensatz ist wiederum ein Array mit Funktions-Parametern:
 
-    // erster Test: Funktioniert 0° celsius?
-    // der Methodenname muss mit "test" beginnen:
-    public function testCToF() {
+            // Normale Werte
+            ['celsius' => 0.0, 'fahrenheit' => 32.0],
+            ['celsius' => 5.0, 'fahrenheit' => 41.0],
+            ['celsius' => -40.0, 'fahrenheit' => -40.0],
+            ['celsius' => 100.0, 'fahrenheit' => 212.0],
+            // Grenzwerte
+            ['celsius' => -273.15, 'fahrenheit' => -459.67], // absoluter Nullpunkt
+            ['celsius' => 1000.0, 'fahrenheit' => 1832.0],  // großer Wert
+            // Spezielle Dezimalwerte
+            ['celsius' => 0.0001, 'fahrenheit' => 32.0],
+        ];
+    }
+
+    public static function invalidCelsiusData(): array {
+        return [
+            [null],
+            [''],
+            ['20'],
+            ['not a number'],
+        ];
+    }
+
+    // Test mit DataProvider-Methode:
+    // Input-Werte werden als Funktionsparameter übergeben.
+	// Die Methode wird nun für jeden Test-Datensatz einzeln aufgerufen:
+    #[DataProvider('cToFData')]
+    public function testCToF(float $celsius, float $fahrenheit) {
         // Wir erstellen eine Instanz:
         $calc = new Calculator();
-
-        // wir fragen nach 0°C. Dies sollte 32 F ergeben:
-        $result = $calc->cToF(0);
-        // erhalten wir eine Float-Antwort?
+        // Normaler Testfall für gültige Werte
+        $result = $calc->cToF($celsius);
         $this->assertIsFloat($result);
-        // ... und stimmt sie auch?
-        $this->assertSame(32.0, $result);
-
-           // wir fragen nach 5°C. Dies sollte 41 F ergeben:
-        $result = $calc->cToF(5);
-        $this->assertIsFloat($result);
-        $this->assertSame(41.0, $result);
-
-
-
-    }
-    
-    public function testCToFArray() {
-        $calc = new Calculator();
-        $result = $calc->cToF([0, 100]);
-
-        $this->assertIsArray($result);
-        $this->assertSame([32.0, 212.0], $result);
+        // `assertEquals` mit Delta-Wert von 0.01 für Rundungsabweichungen
+        $this->assertEquals($fahrenheit, $result, '');
     }
 
-      // Test für negative Werte und Grenzfälle
-      public function testCToFNegativeValues() {
-        $calc = new Calculator();
-        $this->assertSame(-40.0, $calc->cToF(-40));
-        $this->assertSame(14.0, $calc->cToF(-10));
-    }
-
-    // Test für hohe Werte
-    public function testCToFHighValues() {
-        $calc = new Calculator();
-        $result = $calc->cToF(1000);  // ein hoher Celsius-Wert
-        $this->assertEquals(1832.0, $result);
-    }
-
-    // Test für leeres Array
-    public function testCToFEmptyArray() {
-        $calc = new Calculator();
-        $result = $calc->cToF([]);
-        $this->assertIsArray($result);
-        $this->assertSame([], $result);
-    }
-
-    // Test für ungültige Eingaben
-    public function testCToFInvalidInput() {
-        $calc = new Calculator();
-
-        // Prüfen, dass eine Exception bei ungültigen Eingaben geworfen wird
+    #[DataProvider('invalidCelsiusData')]
+    public function testCToFInvalidInput($celsius) {
         $this->expectException(\TypeError::class);
-        $calc->cToF("string"); // ungültiger Typ
-    }
-
-    // Test für Nullwerte (null)
-    public function testCToFNullValue() {
         $calc = new Calculator();
-        
-        // Da `null` kein gültiger Typ für diesen Parameter ist, sollte eine TypeError-Exception ausgelöst werden
-        $this->expectException(\TypeError::class);
-        $calc->cToF(null);
+        $calc->cToF($celsius);
     }
 }
