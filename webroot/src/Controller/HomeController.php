@@ -72,9 +72,9 @@ class HomeController {
     public function getInputParams(ServerRequestInterface $request) : array {
         $params = $request->getQueryParams();
         $mode = $params['mode'] ?? 'historic';
-        $plz = $request->getQueryParams()['zip'] ?? null;
-        $date = $request->getQueryParams()['date'] ?? null;
-        $time = $request->getQueryParams()['time'] ?? null;
+        $plz = $params['zip'] ?? null;
+        $date = $params['date'] ?? null;
+        $time = $params['time'] ?? null;
 
         return [
             'mode' => $mode,
