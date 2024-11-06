@@ -41,8 +41,8 @@ class HomeControllerTest extends TestCase {
         ], $params);
     }
 
-    // Test für den Fall ohne PLZ
-    public function testGetInputParamsWithMissingZip() {
+    // Test für den Fall ohne PLZ, Datum und Zeit
+    public function testGetInputParamsWithMissingZipDateAndTime() {
         $request = (new ServerRequest('GET', '/weather'))
             ->withQueryParams(['mode' => 'historic']);
         $controller = new HomeController();
@@ -66,7 +66,7 @@ class HomeControllerTest extends TestCase {
         $params = $controller->getInputParams($request);
 
         $this->assertEquals([
-            'mode' => 'historic',
+            'mode' => 'historic', // Standardwert, da 'mode' nicht gesetzt ist
             'zip' => '8500',
             'date' => null,
             'time' => null
