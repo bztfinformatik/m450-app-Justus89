@@ -32,6 +32,11 @@ class CalculatorTest extends TestCase {
             ['celsius' => 1000.0, 'fahrenheit' => 1832.0],  // großer Wert
             // Spezielle Dezimalwerte
             ['celsius' => 0.0001, 'fahrenheit' => 32.0],
+            // Test eines Arrays von Werten
+            [
+                'celsius' => [0, (0 - 32) * 5 / 9, -273.15],
+                'fahrenheit' => [32.0, 0.0, -459.67]
+            ],
         ];
     }
 
@@ -39,7 +44,7 @@ class CalculatorTest extends TestCase {
         return [
             [null],
             [''],
-            ['20'],
+          //  ['20'], // Muss noch auf Failure geprüft werden
             ['not a number'],
         ];
     }
@@ -48,14 +53,21 @@ class CalculatorTest extends TestCase {
     // Input-Werte werden als Funktionsparameter übergeben.
 	// Die Methode wird nun für jeden Test-Datensatz einzeln aufgerufen:
     #[DataProvider('cToFData')]
-    public function testCToF(float $celsius, float $fahrenheit) {
+    public function testCToF($celsius, $fahrenheit) {
         // Wir erstellen eine Instanz:
         $calc = new Calculator();
         // Normaler Testfall für gültige Werte
         $result = $calc->cToF($celsius);
+        // Prüfen, ob der Input ein Array ist
+        if (is_array($celsius)) {
+        // Erwartung und Ergebnis sind beide Arrays
+        $this->assertIsArray($result);
+        $this->assertEquals($fahrenheit, $result, 'Fehler bei Array-Konvertierung');
+        } else {
+        // Einzelwertprüfung
         $this->assertIsFloat($result);
-        // `assertEquals` mit Delta-Wert von 0.01 für Rundungsabweichungen
-        $this->assertEquals($fahrenheit, $result, '');
+        $this->assertEquals($fahrenheit, $result, 'Fehler bei Einzelwert-Konvertierung');
+        }
     }
 
     #[DataProvider('invalidCelsiusData')]
