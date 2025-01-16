@@ -75,12 +75,17 @@ class HomeController {
         $plz = $params['zip'] ?? null;
         $date = $params['date'] ?? null;
         $time = $params['time'] ?? null;
+        $timestamp = null;
+        if (!empty($date) && !empty($time) && strtotime("{$date} {$time}")) {
+            $timestamp = date('Y-m-d H:i:s', strtotime("{$date} {$time}"));
+        }
 
         return [
             'mode' => $mode,
             'zip' => $plz,
             'date' => $date,
             'time' => $time,
+            'timestamp' => $timestamp,
         ];
     }
 

@@ -26,6 +26,26 @@ class Calculator {
         }
         // Wenn der Input gültig ist, erfolgt die Umrechnung und Rückgabe
         return round($celsius * 9 / 5 + 32, 2); // Rundet das Ergebnis auf 2 Dezimalstellen
-
     }
+
+    // In der Calculator-Klasse:
+    public function calcAverage(array $data): array {
+        if (empty($data)) {
+            return ['temp' => 0];  // Wenn das Array leer ist, gebe 0 zurück.
+        }
+
+        $sum = 0;
+        $count = count($data);
+
+        foreach ($data as $item) {
+            if (isset($item['temp'])) {
+                $sum += $item['temp'];  // Addiere die 'temp'-Werte.
+            }
+        }
+
+        // Rückgabe des Durchschnitts, auf 2 Dezimalstellen gerundet.
+        return ['temp' => round($sum / $count, 2)];
+    }
+
+    
 }

@@ -21,6 +21,22 @@
   <button type="button" id="loadLive">aktuelle Wetterdaten laden</button>
 </div>
 
+<!-- Trennlinie zwischen den Buttons und den neuen Datepickern -->
+<hr>
+
+<div id="averageSection">
+  <div>Durchschnittswerte laden zwischen:</div>
+  <!-- Neue Datepicker für Startdatum und Enddatum -->
+  <label for="startDate">Startdatum:</label>
+  <input type="date" id="startDate" name="startDate" />
+
+  <label for="endDate">Enddatum:</label>
+  <input type="date" id="endDate" name="endDate" />
+
+  <!-- Button für Durchschnittswerte laden -->
+  <button type="button" id="loadAverage">Durchschnittswerte laden</button>
+</div>
+
 <div id="output">
 </div>
 {% endblock %}
@@ -62,6 +78,8 @@
   const plzField = document.getElementById("plz");
   const dateField = document.getElementById("date");
   const timeField = document.getElementById("time");
+  const startDateField = document.getElementById("startDate");
+  const endDateField = document.getElementById("endDate");
   const outputEl = document.getElementById("output");
 
   // Click-Event History-Laden-Btn:
@@ -90,6 +108,20 @@
     outputEl.innerHTML = res;
   });
 
+  // Click-Event für den Durchschnittswerte-Laden-Btn:
+  const avgBtn = document.getElementById("loadAverage");
+  avgBtn.addEventListener("click", async () => {
+    // Durchschnittswerte laden auf Button-Klick auslösen
+    avgBtn.setAttribute("disabled", true);
+    const res = await loadAverageWeather(
+      plzField.value,
+      startDateField.value,
+      endDateField.value
+    );
+    avgBtn.removeAttribute("disabled");
+    outputEl.innerHTML = res;
+  });
+
 
   /**
    * Lädt die gewünschten historischen Wetterdaten von der Backend-API:
@@ -108,6 +140,17 @@
   async function loadActualWeather(zip) {
     const apiUrl = "/weatherdataHtml";
     const res = await fetch(`${apiUrl}?mode=actual&zip=${zip}`, {
+      method: "GET",
+    });
+    return await res.text();
+  }
+
+  /**
+   * Lädt die gewünschten Durchschnittswerte von der Backend-API:
+   */
+   async function loadAverageWeather(zip, startDate, endDate) {
+    const apiUrl = "/weatherdataHtml";
+    const res = await fetch(`${apiUrl}?mode=average&zip=${zip}&startDate=${startDate}&endDate=${endDate}`, {
       method: "GET",
     });
     return await res.text();
